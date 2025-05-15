@@ -2,76 +2,89 @@ from datetime import datetime
 import pytest
 from selenium.webdriver.common.by import By
 
+from pages.AccountSuccessPage import AccountSuccessPage
+from pages.HomePage import HomePage
+from pages.RegisterPage import RegisterPage
 
-@pytest.mark.usefixtures("setup_teardown")
+
+@pytest.mark.usefixtures("setup_and_teardown")
 class TestRegistration:
 
     def test_register_with_mandatory_fields(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Register").click()
-        self.driver.find_element(By.ID, "input-firstname").send_keys("Moti")
-        self.driver.find_element(By.ID, "input-lastname").send_keys("bhai")
-        self.driver.find_element(By.ID, "input-email").send_keys(self.generate_email_with_time_stamp())
-        self.driver.find_element(By.ID, "input-telephone").send_keys("123467")
-        self.driver.find_element(By.ID, "input-password").send_keys("1234")
-        self.driver.find_element(By.ID, "input-confirm").send_keys("1234")
-        self.driver.find_element(By.NAME, "agree").click()
-        self.driver.find_element(By.XPATH, "//input[@value='Continue']").click()
+        home_page = HomePage(self.driver)
+        home_page.click_my_account_drop_menu()
+        home_page.click_register_button()
+        register_page = RegisterPage(self.driver)
+        register_page.give_first_name_input("Moti11")
+        register_page.give_last_name_input("bhai")
+        register_page.give_email_input(self.generate_email_with_time_stamp())
+        register_page.give_telephone_input("123456")
+        register_page.give_password_input("12345")
+        register_page.give_confirm_password_input("12345")
+        register_page.click_agree_button()
+        register_page.click_continue_button()
         expected_text = "Your Account Has Been Created!"
-        assert self.driver.find_element(By.XPATH, "//div[@id='content']/h1").text.__eq__(expected_text)
+        register_success = AccountSuccessPage(self.driver)
+        assert register_success.register_success_message_displayed().__eq__(expected_text)
 
 
     def test_register_with_all_fields(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Register").click()
-        self.driver.find_element(By.ID, "input-firstname").send_keys("Moti")
-        self.driver.find_element(By.ID, "input-lastname").send_keys("bhai")
-        self.driver.find_element(By.ID, "input-email").send_keys(self.generate_email_with_time_stamp())
-        self.driver.find_element(By.ID, "input-telephone").send_keys("123467")
-        self.driver.find_element(By.ID, "input-password").send_keys("1234")
-        self.driver.find_element(By.ID, "input-confirm").send_keys("1234")
-        self.driver.find_elements(By.XPATH, "//input[@name='newsletter'][@value='1']").clear()
-        self.driver.find_element(By.NAME, "agree").click()
-        self.driver.find_element(By.XPATH, "//input[@value='Continue']").click()
-        expected_text = "Your Account Has Been Created!"
-        assert self.driver.find_element(By.XPATH, "//div[@id='content']/h1").text.__eq__(expected_text)
+        home_page = HomePage(self.driver)
+        home_page.click_my_account_drop_menu()
+        home_page.click_register_button()
+        register_page = RegisterPage(self.driver)
+        register_page.give_first_name_input("Moti11")
+        register_page.give_last_name_input("bhai")
+        register_page.give_email_input(self.generate_email_with_time_stamp())
+        register_page.give_telephone_input("123456")
+        register_page.give_password_input("12345")
+        register_page.give_confirm_password_input("12345")
+        register_page.click_newsletter_subscribe_button() #extra check
+        register_page.click_agree_button()
+        register_page.click_continue_button()
 
+        expected_text = "Your Account Has Been Created!"
+        register_success = AccountSuccessPage(self.driver)
+        assert register_success.register_success_message_displayed().__eq__(expected_text)
 
     def test_register_with_same_emailid(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Register").click()
-        self.driver.find_element(By.ID, "input-firstname").send_keys("Ocean")
-        self.driver.find_element(By.ID, "input-lastname").send_keys("Eleven")
-        self.driver.find_element(By.ID, "input-email").send_keys("ocean@gmail.com")
-        self.driver.find_element(By.ID, "input-telephone").send_keys("123467")
-        self.driver.find_element(By.ID, "input-password").send_keys("1234")
-        self.driver.find_element(By.ID, "input-confirm").send_keys("1234")
-        self.driver.find_elements(By.XPATH, "//input[@name='newsletter'][@value='1']").clear()
-        self.driver.find_element(By.NAME, "agree").click()
-        self.driver.find_element(By.XPATH, "//input[@value='Continue']").click()
+        home_page = HomePage(self.driver)
+        home_page.click_my_account_drop_menu()
+        home_page.click_register_button()
+        register_page = RegisterPage(self.driver)
+        register_page.give_first_name_input("Moti11")
+        register_page.give_last_name_input("bhai")
+        register_page.give_email_input("ocean@gmail.com")
+        register_page.give_telephone_input("123456")
+        register_page.give_password_input("12345")
+        register_page.give_confirm_password_input("12345")
+        register_page.click_agree_button()
+        register_page.click_continue_button()
         expected_text = "Warning: E-Mail Address is already registered!"
-        assert self.driver.find_element(By.XPATH, "//div[@id='account-register']/div[1]").text.__contains__(expected_text)
+        assert register_page.display_email_warning_message().__eq__(expected_text)
 
     def test_register_without_credentials(self):
-        self.driver.find_element(By.XPATH, "//span[text()='My Account']").click()
-        self.driver.find_element(By.LINK_TEXT, "Register").click()
-        self.driver.find_element(By.ID, "input-firstname").send_keys("")
-        self.driver.find_element(By.ID, "input-lastname").send_keys("")
-        self.driver.find_element(By.ID, "input-email").send_keys("")
-        self.driver.find_element(By.ID, "input-telephone").send_keys("")
-        self.driver.find_element(By.ID, "input-password").send_keys("")
-        self.driver.find_element(By.ID, "input-confirm").send_keys("")
-        self.driver.find_element(By.XPATH, "//input[@value='Continue']").click()
+        home_page = HomePage(self.driver)
+        home_page.click_my_account_drop_menu()
+        home_page.click_register_button()
+        register_page = RegisterPage(self.driver)
+        register_page.give_first_name_input("")
+        register_page.give_last_name_input("")
+        register_page.give_email_input("")
+        register_page.give_telephone_input("")
+        register_page.give_password_input("")
+        register_page.give_confirm_password_input("")
+        register_page.click_agree_button()
+        register_page.click_continue_button()
 
-        expected_privacy = "Warning: You must agree to the Privacy Policy!"
-        assert self.driver.find_element(By.XPATH, "//div[@id='account-register']/div[1]").text.__contains__(expected_privacy)
+        expected_privacy_warning = "Warning: You must agree to the Privacy Policy!"
+        assert register_page.display_privacy_policy_warning_message().__eq__(expected_privacy_warning)
 
         expected_firstname_warning = "First Name must be between 1 and 32 characters!"
-        assert self.driver.find_element(By.XPATH,"//input[@id='input-firstname']/following-sibling::div").text.__contains__(expected_firstname_warning)
+        assert register_page.display_first_name_warning_message().__eq__(expected_firstname_warning)
 
-        expected_lasttname_warning = "Last Name must be between 1 and 32 characters!"
-        assert self.driver.find_element(By.XPATH, "//input[@id='input-lastname']/following-sibling::div").text.__contains__(
-            expected_lasttname_warning)
+        expected_lastname_warning = "Last Name must be between 1 and 32 characters!"
+        assert register_page.display_last_name_warning_message().__eq__(expected_lastname_warning)
 
 
     def generate_email_with_time_stamp(self):
